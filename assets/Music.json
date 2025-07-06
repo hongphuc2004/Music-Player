@@ -1,0 +1,59 @@
+[
+    {
+        "name": "Attention",
+        "singer": "Charlie Puth",
+        "path": "../music/Charlie Puth - Attention Official Video.mp3",
+        "image": "img/Attention.jpg",
+        "album": "",
+        "genre": "",
+        "year": ""
+    },
+    {
+        "name": "Summertime",
+        "singer": "K-391",
+        "path": "../music/K-391 - Summertime [Sunshine].mp3",
+        "image": "img/SummerTime.jpg"
+    },
+    {
+        "name": "Reality",
+        "singer": "Lost Frequencies",
+        "path": "../music/Reality - Lost Frequencies.mp3",
+        "image": "img/Reality.jpg"
+    },
+    {
+        "name": "Monody",
+        "singer": "TheFatRat",
+        "path": "../music/TheFatRat - Monody (feat. Laura Brehm).mp3",
+        "image": "img/Monody.jpg"
+    },
+    {
+        "name": "That Girl",
+        "singer": "Olly Murs",
+        "path": "../music/Olly Murs - That Girl.mp3",
+        "image": "img/ThatGirl.jpg",
+        "album": ""
+    },
+    {
+        "name": "Nevada",
+        "singer": "Vicetone、Cozi Zuehlsdorff",
+        "path": "../music/Vicetone、Cozi Zuehlsdorff - Nevada.mp3",
+        "image": "img/Nevada.jpg",
+        "album": ""
+    },
+    {
+        "name": "Xomu",
+        "singer": "Lanterns",
+        "path": "../music/Lanterns - Xomu.mp3",
+        "image": "img/Xomu.jpg",
+        "album": ""
+    },
+    {
+        "name": "Give Me Your Love",
+        "singer": "DEAMN",
+        "path": "../music/Give Me Your Love.mp3",
+        "image": "img/Give me your love.jpg",
+        "album": "",
+        "genre": "",
+        "year": ""
+    }
+]
