@@ -81,12 +81,12 @@ class FavoriteMusicPlayer {
             songItem.className = `favorite-song-item ${index === this.currentSongIndex ? 'playing' : ''}`;
             songItem.innerHTML = `
                 <div class="favorite-song-number">${index + 1}</div>
-                <img src="../${song.image}" alt="${song.name}" onerror="this.src='../img/Reality.jpg'">
+                <img src="../${song.image}" alt="${song.name}"">
                 <div class="favorite-song-info">
                     <div class="favorite-song-title">${song.name}</div>
                     <div class="favorite-song-artist">${song.singer}</div>
                 </div>
-                <div class="favorite-song-duration">3:24</div>
+                <div class="favorite-song-duration"></div>
                 <div class="favorite-song-actions">
                     <button class="favorite-action-btn play-btn" title="Phát" data-index="${index}">
                         <i class="fas fa-play"></i>

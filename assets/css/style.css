@@ -90,6 +90,43 @@ body {
     text-align: center;
 }
 
+/* Sidebar Icon Colors */
+.nav-item .nav-icon.fa-history {
+    color: #9c27b0; /* Purple for "Nghe gần đây" */
+}
+
+.nav-item .nav-icon.fa-heart {
+    color: #00bcd4; /* Cyan for "Bài hát yêu thích" */
+}
+
+.nav-item .nav-icon.fa-list {
+    color: #ff9800; /* Orange for "Playlist" */
+}
+
+.nav-item .nav-icon.fa-compact-disc {
+    color: #e91e63; /* Pink for "Album" */
+}
+
+.nav-item .nav-icon.fa-edit {
+    color: #4caf50; /* Green for "Chỉnh sửa" */
+}
+
+/* Active state keeps the icon color */
+.nav-item.active .nav-icon.fa-history,
+.nav-item.edit-active .nav-icon.fa-edit {
+    color: white;
+}
+
+.nav-item.active .nav-icon.fa-heart {
+    color: white;
+}
+
+/* Hover effect for icons */
+.nav-item:hover .nav-icon {
+    transform: scale(1.1);
+    transition: all 0.3s ease;
+}
+
 .nav-text {
     font-weight: 500;
 }
