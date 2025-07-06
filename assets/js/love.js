@@ -5,14 +5,7 @@ class FavoriteMusicPlayer {
         this.favorites = JSON.parse(localStorage.getItem('favorites')) || [];
         this.currentSongIndex = 0;
         this.isPlaying = false;
-            this.isShuffled = false;
-        this.isRepeated = false;
         this.currentSort = 'name';
-        
-        // Animation tracking for album art rotation
-        this.rotationAngle = 0;
-        this.animationStartTime = 0;
-        this.animationPausedTime = 0;
         
         this.audioPlayer = document.getElementById('audio-player');
         this.favoritesListEl = document.getElementById('favorites-list');
@@ -20,35 +13,25 @@ class FavoriteMusicPlayer {
         this.favoriteCountEl = document.getElementById('favorite-count');
         
         // Player panel elements
-        this.albumArtEl = document.getElementById('album-art');
-        this.currentSongTitleEl = document.getElementById('current-song-title');
-        this.currentSongArtistEl = document.getElementById('current-song-artist');
+        this.albumArt = document.getElementById('album-art');
+        this.songTitle = document.getElementById('current-song-title');
+        this.songArtist = document.getElementById('current-song-artist');
         this.playPauseBtn = document.getElementById('play-pause-btn');
         this.prevBtn = document.getElementById('prev-btn');
         this.nextBtn = document.getElementById('next-btn');
-        this.shuffleBtn = document.getElementById('shuffle-btn');
-        this.repeatBtn = document.getElementById('repeat-btn');
         this.progressBar = document.getElementById('progress-bar');
         this.currentTimeEl = document.getElementById('current-time');
         this.totalTimeEl = document.getElementById('total-time');
+        this.noMusicPlaceholder = document.getElementById('no-music-placeholder');
         
         this.init();
     }
     
     async init() {
-        // Clear any previous background from HTML tag and root
-        document.documentElement.style.removeProperty('--current-album-art');
-        document.querySelector('html').removeAttribute('style');
-        
         await this.loadAllSongs();
         this.loadFavoriteSongs();
         this.renderFavorites();
         this.bindEvents();
-        
-        // Initialize player panel if we have favorite songs
-        if (this.favoriteSongs.length > 0) {
-            this.updatePlayerPanel();
-        }
     }
     
     async loadAllSongs() {
@@ -72,11 +55,6 @@ class FavoriteMusicPlayer {
         }));
         
         this.updateFavoriteCount();
-        
-        // If we have favorite songs and current index is valid, update player panel
-        if (this.favoriteSongs.length > 0 && this.currentSongIndex < this.favoriteSongs.length) {
-            this.updatePlayerPanel();
-        }
     }
     
     updateFavoriteCount() {
@@ -100,7 +78,7 @@ class FavoriteMusicPlayer {
         
         this.favoriteSongs.forEach((song, index) => {
             const songItem = document.createElement('div');
-            songItem.className = `favorite-song-item ${index === this.currentSongIndex ? 'playing active' : ''}`;
+            songItem.className = `favorite-song-item ${index === this.currentSongIndex ? 'playing' : ''}`;
             songItem.innerHTML = `
                 <div class="favorite-song-number">${index + 1}</div>
                 <img src="../${song.image}" alt="${song.name}" onerror="this.src='../img/Reality.jpg'">
@@ -176,7 +154,7 @@ class FavoriteMusicPlayer {
             this.clearAllFavorites();
         });
         
-        // Player panel controls
+        // Player controls
         this.playPauseBtn.addEventListener('click', () => {
             this.togglePlayPause();
         });
@@ -189,36 +167,27 @@ class FavoriteMusicPlayer {
             this.nextSong();
         });
         
-        this.shuffleBtn.addEventListener('click', () => {
-            this.toggleShuffle();
-        });
-        
-        this.repeatBtn.addEventListener('click', () => {
-            this.toggleRepeat();
-        });
-        
         // Audio events
         this.audioPlayer.addEventListener('timeupdate', () => {
             this.updateProgress();
         });
         
         this.audioPlayer.addEventListener('loadedmetadata', () => {
-            this.updateTotalTime();
+            this.updateProgress();
         });
         
-        this.audioPlayer.addEventListener('ended', () => {
-            this.nextSong();
-        });
-        
-        // Add play/pause event listeners to sync UI state
         this.audioPlayer.addEventListener('play', () => {
             this.isPlaying = true;
-            this.syncUIState();
+            this.updatePlayButton();
         });
         
         this.audioPlayer.addEventListener('pause', () => {
             this.isPlaying = false;
-            this.syncUIState();
+            this.updatePlayButton();
+        });
+        
+        this.audioPlayer.addEventListener('ended', () => {
+            this.nextSong();
         });
         
         // Progress bar
@@ -242,48 +211,53 @@ class FavoriteMusicPlayer {
         }
     }
     
+    updatePlayerBackground(imagePath) {
+        // Chuyển đổi đường dẫn relative nếu cần
+        let fullPath = imagePath;
+        if (imagePath && !imagePath.startsWith('../') && !imagePath.startsWith('http')) {
+            fullPath = `../${imagePath}`;
+        }
+        
+        console.log('Updated background blur with:', fullPath);
+        document.documentElement.style.setProperty('--current-album-art', `url('${fullPath}')`);
+    }
+
     playSong(index) {
         if (index < 0 || index >= this.favoriteSongs.length) return;
         
         this.currentSongIndex = index;
         const song = this.favoriteSongs[index];
         
-        // Force reset album art animation to 0 degrees for new song
-        this.albumArtEl.classList.remove('playing');
-        this.albumArtEl.classList.add('reset');
+        // Update background blur
+        this.updatePlayerBackground(song.image);
         
-        // Force reflow to apply reset
-        this.albumArtEl.offsetHeight;
-        
-        // Remove reset and prepare for new animation
-        setTimeout(() => {
-            this.albumArtEl.classList.remove('reset');
-        }, 10);
+        // Update player panel
+        this.updatePlayerPanel(song);
         
         this.audioPlayer.src = `../${song.path}`;
-        this.isPlaying = true;
-        this.updatePlayerPanel();
-        this.renderFavorites(); // Re-render to update playing state
-        
-        this.audioPlayer.play().catch(error => {
+        this.audioPlayer.play().then(() => {
+            this.isPlaying = true;
+            this.updatePlayButton();
+            this.renderFavorites(); // Re-render to update playing state
+        }).catch(error => {
             console.error('Error playing song:', error);
-            this.isPlaying = false;
-            this.updatePlayerPanel();
         });
-        updatePlayerBackground(song.image);
     }
     
     togglePlayPause() {
         if (this.isPlaying) {
             this.audioPlayer.pause();
-            // isPlaying will be set to false in pause event listener
+            this.isPlaying = false;
         } else {
-            this.audioPlayer.play().catch(error => {
+            this.audioPlayer.play().then(() => {
+                this.isPlaying = true;
+                this.updatePlayButton(); // Cập nhật button sau khi play thành công
+            }).catch(error => {
                 console.error('Error playing song:', error);
+                this.isPlaying = false;
             });
-            // isPlaying will be set to true in play event listener
         }
-        // updatePlayerPanel will be called by event listeners
+        this.updatePlayButton();
     }
     
     nextSong() {
@@ -297,121 +271,95 @@ class FavoriteMusicPlayer {
         this.playSong(prevIndex);
     }
     
-    updatePlayerPanel() {
-        if (this.favoriteSongs.length === 0) {
-            // Clear background when no songs
-            document.documentElement.style.removeProperty('--current-album-art');
-            return;
-        }
+    updatePlayerPanel(song) {
+        // Update album art
+        this.albumArt.src = `../${song.image}`;
+        this.albumArt.style.display = 'block';
+        this.noMusicPlaceholder.style.display = 'none';
         
-        const song = this.favoriteSongs[this.currentSongIndex];
-        
-        // Handle different image path formats
-        let imageSource;
-        if (song.image && song.image.startsWith('data:image')) {
-            imageSource = song.image; // Base64 image
-        } else if (song.image && (song.image.startsWith('../') || song.image.startsWith('img/'))) {
-            imageSource = song.image; // Proper path format
-        } else if (song.image) {
-            imageSource = `../${song.image}`; // Old format - add ../
-        } else {
-            imageSource = '../img/Reality.jpg'; // Default
-        }
-        
-        // Show album art and hide placeholder
-        const placeholder = document.getElementById('no-music-placeholder');
-        if (placeholder) {
-            placeholder.style.display = 'none';
-        }
-        this.albumArtEl.style.display = 'block';
-        this.albumArtEl.src = imageSource;
-        this.albumArtEl.onerror = () => {
-            this.albumArtEl.src = '../img/Reality.jpg';
-        };
+        // Reset album art animation để về 0 độ khi chuyển bài
+        this.albumArt.classList.add('reset');
+        setTimeout(() => {
+            this.albumArt.classList.remove('reset');
+            // Animation sẽ được cập nhật bởi updatePlayButton
+        }, 50);
         
         // Update song info
-        this.currentSongTitleEl.textContent = song.name;
-        this.currentSongArtistEl.textContent = song.singer;
-        
-        // Sync UI state with actual audio state
-        this.syncUIState();
+        this.songTitle.textContent = song.name;
+        this.songArtist.textContent = song.singer;
     }
     
-    syncUIState() {
-        // Update play/pause button based on actual audio state
+    updatePlayButton() {
         const playIcon = this.isPlaying ? 'fas fa-pause' : 'fas fa-play';
         this.playPauseBtn.innerHTML = `<i class="${playIcon}"></i>`;
         
-        // Update album art animation based on actual playing state
-        this.updateAlbumArtAnimation();
-    }
-    
-    updateAlbumArtAnimation() {
+        // Update album art animation
         if (this.isPlaying) {
-            // When playing, add playing class to start/resume animation
-            this.albumArtEl.classList.add('playing');
+            this.albumArt.classList.add('playing');
+            this.playPauseBtn.classList.remove('paused');
         } else {
-            // When paused, remove playing class to pause animation at current position
-            this.albumArtEl.classList.remove('playing');
+            this.albumArt.classList.remove('playing');
+            this.playPauseBtn.classList.add('paused');
         }
     }
     
     updateProgress() {
-        if (this.audioPlayer.duration) {
+        if (this.audioPlayer.duration && !isNaN(this.audioPlayer.duration)) {
             const progress = (this.audioPlayer.currentTime / this.audioPlayer.duration) * 100;
             this.progressBar.value = progress;
+            
+            // Update CSS variable for progress bar background
             this.progressBar.style.setProperty('--progress', `${progress}%`);
             
-            // Update current time
-            const minutes = Math.floor(this.audioPlayer.currentTime / 60);
-            const seconds = Math.floor(this.audioPlayer.currentTime % 60);
-            this.currentTimeEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            // Update time display
+            this.currentTimeEl.textContent = this.formatTime(this.audioPlayer.currentTime || 0);
+            this.totalTimeEl.textContent = this.formatTime(this.audioPlayer.duration || 0);
+        } else {
+            // Default values when duration is not available
+            this.currentTimeEl.textContent = '0:00';
+            this.totalTimeEl.textContent = '0:00';
+            this.progressBar.value = 0;
+            this.progressBar.style.setProperty('--progress', '0%');
         }
     }
     
-    updateTotalTime() {
-        if (this.audioPlayer.duration) {
-            const minutes = Math.floor(this.audioPlayer.duration / 60);
-            const seconds = Math.floor(this.audioPlayer.duration % 60);
-            this.totalTimeEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    formatTime(seconds) {
+        if (isNaN(seconds) || seconds < 0) {
+            return '0:00';
         }
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
     }
     
     removeFromFavorites(songName) {
-        const index = this.favorites.indexOf(songName);
-        if (index !== -1) {
-            this.favorites.splice(index, 1);
-            localStorage.setItem('favorites', JSON.stringify(this.favorites));
+        if (confirm(`Bạn có muốn xóa "${songName}" khỏi danh sách yêu thích không?`)) {
+            // Remove from localStorage
+            const index = this.favorites.indexOf(songName);
+            if (index > -1) {
+                this.favorites.splice(index, 1);
+                localStorage.setItem('favorites', JSON.stringify(this.favorites));
+            }
             
-            // Reload favorite songs
-            this.loadFavoriteSongs();
+            // Remove from current list
+            this.favoriteSongs = this.favoriteSongs.filter(song => song.name !== songName);
+            
+            // Adjust current index if necessary
+            if (this.currentSongIndex >= this.favoriteSongs.length) {
+                this.currentSongIndex = 0;
+            }
+            
+            this.updateFavoriteCount();
             this.renderFavorites();
             
-            // If currently playing song was removed, stop player
-            const currentSong = this.favoriteSongs[this.currentSongIndex];
-            if (!currentSong || currentSong.name === songName) {
+            if (this.favoriteSongs.length === 0) {
+                // Hide player panel elements
+                this.albumArt.style.display = 'none';
+                this.noMusicPlaceholder.style.display = 'block';
+                this.songTitle.textContent = '';
+                this.songArtist.textContent = '';
                 this.audioPlayer.pause();
                 this.isPlaying = false;
-                this.currentSongIndex = 0;
-                
-                // Stop album art animation
-                this.albumArtEl.classList.remove('playing');
-                this.albumArtEl.style.transform = 'rotate(0deg)';
-                
-                if (this.favoriteSongs.length > 0) {
-                    this.updatePlayerPanel();
-                } else {
-                    // Reset player to empty state
-                    this.currentSongTitleEl.textContent = '';
-                    this.currentSongArtistEl.textContent = '';
-                    this.albumArtEl.style.display = 'none';
-                    const placeholder = document.getElementById('no-music-placeholder');
-                    if (placeholder) {
-                        placeholder.style.display = 'flex';
-                    }
-                    // Clear background
-                    document.documentElement.style.removeProperty('--current-album-art');
-                }
             }
             
             this.showNotification(`Đã xóa "${songName}" khỏi danh sách yêu thích`, 'info');
@@ -426,28 +374,16 @@ class FavoriteMusicPlayer {
             localStorage.setItem('favorites', JSON.stringify(this.favorites));
             this.favoriteSongs = [];
             
-            // Clear background
-            document.documentElement.style.removeProperty('--current-album-art');
-            
-            // Stop player and reset animation
-            this.audioPlayer.pause();
-            this.isPlaying = false;
-            this.albumArtEl.classList.remove('playing');
-            this.albumArtEl.style.transform = 'rotate(0deg)';
-            this.albumArtEl.style.display = 'none';
-            
-            // Show placeholder
-            const placeholder = document.getElementById('no-music-placeholder');
-            if (placeholder) {
-                placeholder.style.display = 'flex';
-            }
-            
-            // Clear song info
-            this.currentSongTitleEl.textContent = '';
-            this.currentSongArtistEl.textContent = '';
-            
             this.updateFavoriteCount();
             this.renderFavorites();
+            
+            // Hide player panel elements
+            this.albumArt.style.display = 'none';
+            this.noMusicPlaceholder.style.display = 'block';
+            this.songTitle.textContent = '';
+            this.songArtist.textContent = '';
+            this.audioPlayer.pause();
+            this.isPlaying = false;
             
             this.showNotification('Đã xóa tất cả bài hát yêu thích', 'warning');
         }
@@ -477,14 +413,3 @@ class FavoriteMusicPlayer {
 document.addEventListener('DOMContentLoaded', () => {
     const favoriteMusicPlayer = new FavoriteMusicPlayer();
 });
-
-function updatePlayerBackground(imagePath) {
-    // Chuyển đổi đường dẫn relative nếu cần
-    let fullPath = imagePath;
-    if (imagePath && !imagePath.startsWith('../') && !imagePath.startsWith('http')) {
-        fullPath = `../${imagePath}`;
-    }
-    
-    console.log('Updated background blur with:', fullPath);
-    document.documentElement.style.setProperty('--current-album-art', `url('${fullPath}')`);
-}

@@ -417,40 +417,69 @@ body.light-theme .favorites-header {
     transform: scale(1.05);
 }
 
-.mini-progress {
-    width: 200px;
+/* Progress Bar Styling for Love Page */
+.progress-container {
+    width: 100%;
+    margin-bottom: 30px;
+    position: relative;
 }
 
-.mini-progress-bar {
+.progress-bar {
     width: 100%;
-    height: 4px;
-    border-radius: 2px;
-    background: var(--bg-tertiary);
+    height: 8px;
+    border-radius: 4px;
+    background: #333;
     outline: none;
     cursor: pointer;
     -webkit-appearance: none;
     appearance: none;
+    position: relative;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    background-image: linear-gradient(to right, #ff4757 0%, #ff4757 var(--progress, 0%), #333 var(--progress, 0%), #333 100%);
+    transition: all 0.2s ease;
 }
 
-.mini-progress-bar::-webkit-slider-thumb {
+.progress-bar::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 12px;
-    height: 12px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
-    background: var(--accent-color);
     cursor: pointer;
     border: none;
+    transition: all 0.2s ease;
 }
 
-.mini-progress-bar::-moz-range-thumb {
-    width: 12px;
-    height: 12px;
+.progress-bar:hover::-webkit-slider-thumb {
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px rgba(255, 71, 87, 0.6), 0 0 0 3px rgba(255, 71, 87, 0.3);
+}
+
+.progress-bar::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
-    background: var(--accent-color);
+    background: #ff4757;
     cursor: pointer;
     border: none;
+    box-shadow: 0 4px 12px rgba(255, 71, 87, 0.4), 0 0 0 2px rgba(255, 71, 87, 0.2);
+    transition: all 0.2s ease;
 }
+
+.progress-bar:hover::-moz-range-thumb {
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px rgba(255, 71, 87, 0.6), 0 0 0 3px rgba(255, 71, 87, 0.3);
+}
+
+/* Progress bar track styling */
+.progress-bar::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(to right, #ff4757 0%, #ff4757 var(--progress, 0%), #333 var(--progress, 0%), #333 100%);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
 
 /* Responsive */
 @media (max-width: 768px) {
@@ -485,10 +514,6 @@ body.light-theme .favorites-header {
     
     .mini-player {
         padding: 0 15px;
-    }
-    
-    .mini-progress {
-        width: 120px;
     }
 }
 

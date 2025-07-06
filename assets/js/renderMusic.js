@@ -50,56 +50,6 @@ class MusicPlayer {
             location.reload(); // Reload trang để load lại từ JSON gốc
         }
     }
-
-    // Method để đồng bộ dữ liệu với file JSON
-    async syncWithMusicJSON() {
-        try {
-            // Tạo danh sách bài hát hoàn chỉnh từ current songs
-            const finalSongs = this.songs.filter(song => !song.isUserAdded).concat(
-                this.songs.filter(song => song.isUserAdded).map(song => ({
-                    name: song.name,
-                    singer: song.singer,
-                    path: song.path,
-                    image: song.image || '',
-                    album: song.album || '',
-                    genre: song.genre || '',
-                    year: song.year || ''
-                }))
-            );
-            
-            // Gửi lên server để cập nhật file JSON
-            const updateResponse = await fetch('/update-music', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    action: 'sync',
-                    songs: finalSongs
-                })
-            });
-            
-            const result = await updateResponse.json();
-            
-            if (result.success) {
-                
-                // Clear localStorage sau khi đồng bộ thành công
-                localStorage.removeItem('deletedSongs');
-                localStorage.removeItem('userAddedSongs');
-                
-                return true;
-            } else {
-                console.error('❌ Lỗi đồng bộ:', result.message);
-                this.showNotification('⚠️ Lỗi đồng bộ với file JSON. Dữ liệu vẫn được lưu local.', 'warning');
-                return false;
-            }
-            
-        } catch (error) {
-            console.error('❌ Lỗi kết nối API:', error);
-            this.showNotification('⚠️ Không thể kết nối server. Dữ liệu được lưu local.', 'warning');
-            return false;
-        }
-    }
     
     async init() {
         await this.loadSongs();
