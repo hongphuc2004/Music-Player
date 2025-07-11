@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chỉnh sửa bài hát - Music Player</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/edit.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" href="assets/img/Icon Music.jpg" type="image/x-icon">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <div class="sidebar">
+            <div class="logo">
+                <img src="assets/img/Icon Music.jpg" alt="Music Player" class="logo-img">
+                <span class="logo-text">Music Player</span>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="index.html" class="nav-item">
+                    <i class="nav-icon fas fa-history"></i>
+                    <span class="nav-text">Nghe gần đây</span>
+                </a>
+                <a href="love.html" class="nav-item">
+                    <i class="nav-icon fas fa-heart"></i>
+                    <span class="nav-text">Bài hát yêu thích</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="nav-icon fas fa-list"></i>
+                    <span class="nav-text">Playlist</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="nav-icon fas fa-compact-disc"></i>
+                    <span class="nav-text">Album</span>
+                </a>
+                <a href="edit.html" class="nav-item edit-active">
+                    <i class="nav-icon fas fa-edit"></i>
+                    <span class="nav-text">Chỉnh sửa</span>
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <div class="page-title">
+                    <button class="back-btn" id="back-btn">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <div class="title-content">
+                        <h1>Chỉnh sửa bài hát</h1>
+                        <span class="page-subtitle">Cập nhật thông tin bài hát của bạn</span>
+                    </div>
+                </div>
+                <button class="theme-toggle-btn" id="theme-toggle-btn">
+                    <i class="fas fa-moon" id="theme-icon"></i>
+                </button>
+            </div>
+
+            <!-- Edit Form -->
+            <div class="edit-container">
+                <form id="edit-song-form" class="edit-form">
+                    <!-- Song Preview -->
+                    <div class="song-preview">
+                        <div class="preview-image">
+                            <img id="preview-album-art" src="assets/img/Reality.jpg" alt="Album Art">
+                            <div class="image-overlay">
+                                <button type="button" class="change-image-btn" id="change-image-btn">
+                                    <i class="fas fa-camera"></i>
+                                    <span>Thay đổi ảnh</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="preview-info">
+                            <h2 id="preview-song-name">Tên bài hát</h2>
+                            <p id="preview-artist-name">Tên ca sĩ</p>
+                            <div class="preview-controls">
+                                <button type="button" class="preview-play-btn" id="preview-play-btn">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Fields -->
+                    <div class="form-sections">
+                        <div class="form-section">
+                            <h3 class="section-title">
+                                <i class="fas fa-info-circle"></i>
+                                Thông tin cơ bản
+                            </h3>
+                            
+                            <div class="form-group">
+                                <label for="song-name">
+                                    <i class="fas fa-music"></i>
+                                    Tên bài hát
+                                </label>
+                                <input type="text" id="song-name" name="songName" placeholder="Nhập tên bài hát..." required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="artist-name">
+                                    <i class="fas fa-microphone"></i>
+                                    Tên ca sĩ
+                                </label>
+                                <input type="text" id="artist-name" name="artistName" placeholder="Nhập tên ca sĩ..." required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="album-name">
+                                    <i class="fas fa-compact-disc"></i>
+                                    Album
+                                </label>
+                                <input type="text" id="album-name" name="albumName" placeholder="Nhập tên album (tùy chọn)">
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3 class="section-title">
+                                <i class="fas fa-image"></i>
+                                Ảnh bìa album
+                            </h3>
+                            
+                            <div class="image-upload-section">
+                                <input type="file" id="image-upload" accept="image/*" style="display: none;">
+                                <div class="image-options">
+                                    <button type="button" class="btn-secondary" id="upload-image-btn">
+                                        <i class="fas fa-upload"></i>
+                                        Tải ảnh từ máy
+                                    </button>
+                                    <button type="button" class="btn-secondary" id="reset-image-btn">
+                                        <i class="fas fa-undo"></i>
+                                        Ảnh mặc định
+                                    </button>
+                                </div>
+                                <small class="help-text">JPG, PNG, GIF (tối đa 5MB, khuyến nghị 300x300px)</small>
+                            </div>
+                        </div>
+                            
+                            <div class="form-group">
+                                <label for="genre">
+                                    <i class="fas fa-list"></i>
+                                    Thể loại
+                                </label>
+                                <select id="genre" name="genre">
+                                    <option value="">Chọn thể loại</option>
+                                    <option value="pop">Pop</option>
+                                    <option value="rock">Rock</option>
+                                    <option value="jazz">Jazz</option>
+                                    <option value="classical">Classical</option>
+                                    <option value="hiphop">Hip Hop</option>
+                                    <option value="electronic">Electronic</option>
+                                    <option value="country">Country</option>
+                                    <option value="r&b">R&B</option>
+                                    <option value="edm">EDM</option>
+                                    <option value="other">Khác</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="year">
+                                    <i class="fas fa-calendar"></i>
+                                    Năm phát hành
+                                </label>
+                                <input type="number" id="year" name="year" placeholder="2024" min="1900" max="2030">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel" id="cancel-btn">
+                            <i class="fas fa-times"></i>
+                            Hủy
+                        </button>
+                        <button type="button" class="btn-save" id="save-btn">
+                            <i class="fas fa-save"></i>
+                            Lưu thay đổi
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preview Audio Player -->
+    <audio id="preview-audio" style="display: none;">
+        <source src="" type="audio/mpeg">
+    </audio>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay" style="display: none;">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Đang lưu thay đổi...</p>
+        </div>
+    </div>
+
+    <script src="assets/js/edit.js"></script>
+    <script src="assets/js/theme.js"></script>
+</body>
+</html>

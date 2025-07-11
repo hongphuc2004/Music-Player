@@ -101,7 +101,7 @@ class MusicPlayer {
     
     async loadSongs() {
         try {
-            const response = await fetch('../Music.json');
+            const response = await fetch('./assets/Music.json');
             const jsonSongs = await response.json();
             
             // Store original songs (without user added songs)
@@ -132,21 +132,24 @@ class MusicPlayer {
             let imageSource;
             if (song.image && song.image.startsWith('data:image')) {
                 imageSource = song.image; // Base64 image
-            } else if (song.image && song.image.startsWith('../')) {
+            } else if (song.image && song.image.startsWith('./assets/')) {
                 imageSource = song.image; // Already has correct path
             } else if (song.image && song.image.startsWith('img/')) {
-                imageSource = `../${song.image}`; // Convert img/ to ../img/
+                imageSource = `./assets/${song.image}`; // Convert img/ to ./assets/img/
             } else if (song.image) {
-                imageSource = `../img/${song.image}`; // Just filename - add full path
+                imageSource = `./assets/img/${song.image}`; // Just filename - add full path
             } else {
-                imageSource = '../img/Reality.jpg'; // Default
+                imageSource = './assets/img/Reality.jpg'; // Default
             }
             playlistItem.innerHTML = `
                 <div class="playlist-item-number">${index + 1}</div>
-                <img src="${imageSource}" alt="${song.name}" onerror="this.src='../img/Reality.jpg'">
+                <img src="${imageSource}" alt="${song.name}" onerror="this.src='./assets/img/Reality.jpg'">
                 <div class="playlist-item-info">
                     <div class="playlist-item-title">${song.name}</div>
                     <div class="playlist-item-artist">${song.singer}</div>
+                </div>
+                <div class="playlist-item-duration" data-song-index="${index}">
+                    <span class="duration-text">--:--</span>
                 </div>
                 <div class="playlist-item-actions">
                     <button class="playlist-action-btn favorite-btn ${isFavorite ? 'active' : ''}" title="${isFavorite ? 'Bỏ thích' : 'Thích'}" data-song-name="${song.name}">
@@ -196,6 +199,60 @@ class MusicPlayer {
             });
             
             this.playlistEl.appendChild(playlistItem);
+        });
+        
+        // Load durations for all songs
+        this.loadSongDurations();
+    }
+    
+    // Function to load and display duration for each song
+    async loadSongDurations() {
+        const durationElements = document.querySelectorAll('.playlist-item-duration');
+        
+        for (let i = 0; i < this.songs.length; i++) {
+            const song = this.songs[i];
+            const durationElement = durationElements[i];
+            
+            if (durationElement && song.path) {
+                try {
+                    const duration = await this.getAudioDuration(song.path);
+                    const durationText = durationElement.querySelector('.duration-text');
+                    if (durationText) {
+                        durationText.textContent = this.formatTime(duration);
+                    }
+                } catch (error) {
+                    console.log(`Could not load duration for ${song.name}:`, error);
+                    const durationText = durationElement.querySelector('.duration-text');
+                    if (durationText) {
+                        durationText.textContent = '--:--';
+                    }
+                }
+            }
+        }
+    }
+    
+    // Function to get audio duration
+    getAudioDuration(audioPath) {
+        return new Promise((resolve, reject) => {
+            const audio = new Audio();
+            audio.preload = 'metadata';
+            
+            audio.onloadedmetadata = () => {
+                resolve(audio.duration);
+            };
+            
+            audio.onerror = () => {
+                reject(new Error('Could not load audio file'));
+            };
+            
+            // Handle case where duration is not available immediately
+            audio.ondurationchange = () => {
+                if (audio.duration && audio.duration !== Infinity) {
+                    resolve(audio.duration);
+                }
+            };
+            
+            audio.src = audioPath;
         });
     }
     
@@ -344,12 +401,12 @@ class MusicPlayer {
         if (song.path.startsWith('data:audio') || song.path.startsWith('blob:')) {
             // Base64 or blob URL - use as is
             audioPath = song.path;
-        } else if (song.path.startsWith('../') || song.path.startsWith('music/')) {
+        } else if (song.path.startsWith('./assets/') || song.path.startsWith('../') || song.path.startsWith('music/')) {
             // Already has proper path or uploaded file path - use as is
             audioPath = song.path;
         } else {
-            // Old format - add ../
-            audioPath = `../${song.path}`;
+            // Old format - add ./assets/
+            audioPath = `./assets/${song.path}`;
         }
         
         this.audioPlayer.src = audioPath;
@@ -368,21 +425,21 @@ class MusicPlayer {
         let imageSource;
         if (song.image && song.image.startsWith('data:image')) {
             imageSource = song.image; // Base64 image
-        } else if (song.image && song.image.startsWith('../')) {
+        } else if (song.image && song.image.startsWith('./assets/')) {
             imageSource = song.image; // Already has correct path
         } else if (song.image && song.image.startsWith('img/')) {
-            imageSource = `../${song.image}`; // Convert img/ to ../img/
+            imageSource = `./assets/${song.image}`; // Convert img/ to ./assets/img/
         } else if (song.image) {
-            imageSource = `../img/${song.image}`; // Just filename - add full path
+            imageSource = `./assets/img/${song.image}`; // Just filename - add full path
         } else {
-            imageSource = '../img/Reality.jpg'; // Default
+            imageSource = './assets/img/Reality.jpg'; // Default
         }
         
         this.albumArtEl.src = imageSource;
         this.albumArtEl.onerror = () => {
-            this.albumArtEl.src = '../img/Reality.jpg';
+            this.albumArtEl.src = './assets/img/Reality.jpg';
             // Update background when fallback image loads
-            this.updatePlayerBackground('../img/Reality.jpg');
+            this.updatePlayerBackground('./assets/img/Reality.jpg');
         };
         
         // Update player panel background with album art
@@ -872,7 +929,7 @@ class MusicPlayer {
 
             // Get original file name and create path pointing to existing file
             const originalFileName = songFile.name;
-            const musicPath = `../music/${originalFileName}`;
+            const musicPath = `./assets/music/${originalFileName}`;
 
             // Create new song object for server (without base64 data)
             const newSong = {

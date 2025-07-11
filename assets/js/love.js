@@ -36,7 +36,7 @@ class FavoriteMusicPlayer {
     
     async loadAllSongs() {
         try {
-            const response = await fetch('../Music.json');
+            const response = await fetch('./assets/Music.json');
             this.allSongs = await response.json();
         } catch (error) {
             console.error('Error loading songs:', error);
@@ -81,12 +81,14 @@ class FavoriteMusicPlayer {
             songItem.className = `favorite-song-item ${index === this.currentSongIndex ? 'playing' : ''}`;
             songItem.innerHTML = `
                 <div class="favorite-song-number">${index + 1}</div>
-                <img src="../${song.image}" alt="${song.name}"">
+                <img src="./assets/${song.image}" alt="${song.name}"">
                 <div class="favorite-song-info">
                     <div class="favorite-song-title">${song.name}</div>
                     <div class="favorite-song-artist">${song.singer}</div>
                 </div>
-                <div class="favorite-song-duration"></div>
+                <div class="favorite-song-duration" data-song-index="${index}">
+                    <span class="duration-text">--:--</span>
+                </div>
                 <div class="favorite-song-actions">
                     <button class="favorite-action-btn play-btn" title="Phát" data-index="${index}">
                         <i class="fas fa-play"></i>
@@ -109,6 +111,9 @@ class FavoriteMusicPlayer {
         
         // Add event listeners for action buttons
         this.bindActionButtons();
+        
+        // Load durations for all favorite songs
+        this.loadSongDurations();
     }
     
     bindActionButtons() {
@@ -212,14 +217,23 @@ class FavoriteMusicPlayer {
     }
     
     updatePlayerBackground(imagePath) {
-        // Chuyển đổi đường dẫn relative nếu cần
-        let fullPath = imagePath;
-        if (imagePath && !imagePath.startsWith('../') && !imagePath.startsWith('http')) {
-            fullPath = `../${imagePath}`;
+        // Chuyển đổi đường dẫn cho CSS variable
+        let cssPath = imagePath;
+        if (imagePath && !imagePath.startsWith('http') && !imagePath.startsWith('data:')) {
+            // CSS sẽ resolve từ assets/css/, nên cần '../img/' để lên assets/img/
+            if (imagePath.startsWith('img/')) {
+                cssPath = `../${imagePath}`;
+            } else if (imagePath.startsWith('./assets/img/')) {
+                cssPath = imagePath.replace('./assets/img/', '../img/');
+            } else if (imagePath.startsWith('assets/img/')) {
+                cssPath = imagePath.replace('assets/img/', '../img/');
+            } else if (!imagePath.startsWith('../img/')) {
+                cssPath = `../img/${imagePath}`;
+            }
         }
         
-        console.log('Updated background blur with:', fullPath);
-        document.documentElement.style.setProperty('--current-album-art', `url('${fullPath}')`);
+        console.log('Setting background blur with:', cssPath);
+        document.documentElement.style.setProperty('--current-album-art', `url('${cssPath}')`);
     }
 
     playSong(index) {
@@ -234,7 +248,7 @@ class FavoriteMusicPlayer {
         // Update player panel
         this.updatePlayerPanel(song);
         
-        this.audioPlayer.src = `../${song.path}`;
+        this.audioPlayer.src = song.path;
         this.audioPlayer.play().then(() => {
             this.isPlaying = true;
             this.updatePlayButton();
@@ -273,7 +287,7 @@ class FavoriteMusicPlayer {
     
     updatePlayerPanel(song) {
         // Update album art
-        this.albumArt.src = `../${song.image}`;
+        this.albumArt.src = `./assets/${song.image}`;
         this.albumArt.style.display = 'block';
         this.noMusicPlaceholder.style.display = 'none';
         
@@ -323,13 +337,63 @@ class FavoriteMusicPlayer {
         }
     }
     
-    formatTime(seconds) {
-        if (isNaN(seconds) || seconds < 0) {
-            return '0:00';
+    // Function to load and display duration for each favorite song
+    async loadSongDurations() {
+        const durationElements = document.querySelectorAll('.favorite-song-duration');
+        
+        for (let i = 0; i < this.favoriteSongs.length; i++) {
+            const song = this.favoriteSongs[i];
+            const durationElement = durationElements[i];
+            
+            if (durationElement && song.path) {
+                try {
+                    const duration = await this.getAudioDuration(song.path);
+                    const durationText = durationElement.querySelector('.duration-text');
+                    if (durationText) {
+                        durationText.textContent = this.formatTime(duration);
+                    }
+                } catch (error) {
+                    console.log(`Could not load duration for ${song.name}:`, error);
+                    const durationText = durationElement.querySelector('.duration-text');
+                    if (durationText) {
+                        durationText.textContent = '--:--';
+                    }
+                }
+            }
         }
-        const mins = Math.floor(seconds / 60);
-        const secs = Math.floor(seconds % 60);
-        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+    
+    // Function to get audio duration
+    getAudioDuration(audioPath) {
+        return new Promise((resolve, reject) => {
+            const audio = new Audio();
+            audio.preload = 'metadata';
+            
+            audio.onloadedmetadata = () => {
+                resolve(audio.duration);
+            };
+            
+            audio.onerror = () => {
+                reject(new Error('Could not load audio file'));
+            };
+            
+            // Handle case where duration is not available immediately
+            audio.ondurationchange = () => {
+                if (audio.duration && audio.duration !== Infinity) {
+                    resolve(audio.duration);
+                }
+            };
+            
+            audio.src = audioPath;
+        });
+    }
+    
+    formatTime(seconds) {
+        if (isNaN(seconds) || seconds < 0) return '0:00';
+        
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = Math.floor(seconds % 60);
+        return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
     }
     
     removeFromFavorites(songName) {

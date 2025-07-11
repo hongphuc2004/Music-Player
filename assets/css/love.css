@@ -136,6 +136,10 @@ body.light-theme .favorites-header {
     border-color: #e0e0e0;
 }
 
+body.light-theme .favorite-song-duration .duration-text {
+    color: #757575;
+}
+
 /* Action Buttons */
 .action-buttons {
     display: flex;
@@ -237,9 +241,16 @@ body.light-theme .favorites-header {
 }
 
 .favorite-song-duration {
-    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    margin-right: 15px;
+    min-width: 45px;
+}
+
+.favorite-song-duration .duration-text {
     font-size: 20px;
-    margin-right: 20px;
+    color: var(--text-secondary);
+    font-weight: 600;
 }
 
 .favorite-song-actions {
@@ -525,7 +536,7 @@ body.light-theme .favorites-header {
     left: -20px;
     right: -20px;
     bottom: -20px;
-    background-image: var(--current-album-art, url('../img/Reality.jpg'));
+    background-image: var(--current-album-art, url('../img/Icon\ Music.jpg'));
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
