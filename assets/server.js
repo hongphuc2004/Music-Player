@@ -15,8 +15,8 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 // Serve static files from the root directory (assets)
 app.use(express.static(__dirname));
 
-// Serve static files from the component directory
-app.use(express.static(path.join(__dirname, 'component')));
+// Serve static files from the parent directory (where HTML files are located)
+app.use(express.static(path.join(__dirname, '..')));
 
 // API endpoint để cập nhật Music.json
 app.post('/update-music', async (req, res) => { // Make the handler async
@@ -216,7 +216,7 @@ async function findMatchingImage(songName) {
 
 // Serve static files
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'component', 'index.html'));
+    res.sendFile(path.join(__dirname, '..', 'index.html'));
 });
 
 app.listen(PORT, () => {

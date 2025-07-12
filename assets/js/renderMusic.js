@@ -427,6 +427,8 @@ class MusicPlayer {
             imageSource = song.image; // Base64 image
         } else if (song.image && song.image.startsWith('./assets/')) {
             imageSource = song.image; // Already has correct path
+        } else if (song.image && song.image.startsWith('assets/')) {
+            imageSource = `./${song.image}`; // Add ./ prefix
         } else if (song.image && song.image.startsWith('img/')) {
             imageSource = `./assets/${song.image}`; // Convert img/ to ./assets/img/
         } else if (song.image) {
@@ -995,9 +997,24 @@ class MusicPlayer {
     // Update player panel background with album art
     updatePlayerBackground(imageSource) {
         if (imageSource) {
+            // Chuyển đổi đường dẫn cho CSS variable
+            let cssPath = imageSource;
+            if (!imageSource.startsWith('http') && !imageSource.startsWith('data:')) {
+                // CSS sẽ resolve từ assets/css/, nên cần '../img/' để lên assets/img/
+                if (imageSource.startsWith('img/')) {
+                    cssPath = `../${imageSource}`;
+                } else if (imageSource.startsWith('./assets/img/')) {
+                    cssPath = imageSource.replace('./assets/img/', '../img/');
+                } else if (imageSource.startsWith('assets/img/')) {
+                    cssPath = imageSource.replace('assets/img/', '../img/');
+                } else if (!imageSource.startsWith('../img/')) {
+                    cssPath = `../img/${imageSource}`;
+                }
+            }
+            
             // Update CSS variable for background blur effect
-            document.documentElement.style.setProperty('--current-album-art', `url('${imageSource}')`);
-            console.log('🎨 Updated background blur with:', imageSource);
+            document.documentElement.style.setProperty('--current-album-art', `url('${cssPath}')`);
+            console.log('🎨 Updated background blur with:', cssPath);
             console.log('🔍 CSS Variable set to:', getComputedStyle(document.documentElement).getPropertyValue('--current-album-art'));
         } else {
             // Clear background when no image

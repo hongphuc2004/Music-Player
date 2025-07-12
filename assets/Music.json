@@ -55,5 +55,14 @@
         "album": "",
         "genre": "",
         "year": ""
+    },
+    {
+        "name": "Vì người không xứng đáng",
+        "singer": "Tuấn Hưng",
+        "path": "./assets/music/Tuấn Hưng - Vì người không xứng đáng.mp3",
+        "image": "img/v__ng__i_kh_ng_x_ng___ng.jpeg",
+        "album": "",
+        "genre": "",
+        "year": ""
     }
 ]
